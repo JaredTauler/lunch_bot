@@ -1,0 +1,6 @@
+anvil
+anvil-app-server
+
+nextcord
+pyyaml
+discord-py-slash-command
