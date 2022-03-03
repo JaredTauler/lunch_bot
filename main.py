@@ -1,8 +1,8 @@
 # Jared Tauler 2/25/2022
 
-import yaml
+import json
 with open('config.yaml', 'r') as f:
-    CONFIG = yaml.safe_load(f)
+    CONFIG = json.load(f)
 
 # Database
 from sqlalchemy import create_engine
