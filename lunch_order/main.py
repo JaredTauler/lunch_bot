@@ -50,15 +50,14 @@ Count = CountStatus()
 
 ## Order loop
 @tasks.loop(hours=24) # Every 24 hours
-async def Announce_Lunch():
+async def Announce_Lunch(ChannelList=None):
     menu = LunchMenu.Today()
     if not menu:
         return
 
-
-    with Session() as session:
-        ChannelList = session.query(db.Guild.announce_channel, db.Guild.ping_role).all()
-        print(ChannelList)
+    if not ChannelList: # Test mode if not ChannelList
+        with Session() as session:
+            ChannelList = session.query(db.Guild.announce_channel, db.Guild.ping_role).all()
 
     def role():
         if i[1] != None:

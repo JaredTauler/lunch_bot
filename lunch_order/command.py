@@ -4,7 +4,16 @@ from nextcord.ext import commands
 import lunch_order.database as db
 
 def this_server(session, ctx):
-    return session.query(db.Guild).filter(db.Guild.id == str(ctx.message.guild.id)).first()
+    guild_id = str(ctx.message.guild.id)
+    def func():
+        return session.query(db.Guild).filter(db.Guild.id == guild_id).first()
+    this = func()
+    if this is None: # Make new row if doesnt exist
+        new = db.Guild(id = guild_id)
+        session.add(new)
+        session.commit()
+        this = func() # Try getting again
+    return this
 
 # Handle command errors + give thumbs up
 def CommandCatch(func):
@@ -51,6 +60,9 @@ async def here(ctx):
 async def pingme(ctx):
     with Session() as session:
         row = this_server(session, ctx)
+        if row.ping_role is None:
+            await ctx.message.reply("An administrator needs to set the ping role using `!set_role @role`")
+            return
         role = ctx.guild.get_role(int(row.ping_role))
         author = ctx.author
 
@@ -62,3 +74,15 @@ async def pingme(ctx):
             await author.add_roles(role)
             await ctx.message.reply(":bell:")
             return True
+
+@commands.has_permissions(administrator=True)
+@bot.command()
+# @CommandCatch
+async def test(ctx):
+    from lunch_order.main import Announce_Lunch # Yes this needs to be down here.
+    with Session() as session:
+        row = this_server(session, ctx)
+
+    await Announce_Lunch(
+        [[row.announce_channel, row.ping_role]]
+    )
