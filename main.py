@@ -4,28 +4,32 @@ import yaml
 with open('config.yaml', 'r') as f:
     CONFIG = yaml.safe_load(f)
 
+# Database
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
+DB_BASE = declarative_base()
+# DB Setup files:
+import lunch_order.database
+# Finalize Database
+engine = create_engine(CONFIG["db-string"], echo=True)
+DB_BASE.metadata.create_all(bind=engine)
+DB = sessionmaker(bind=engine)
+
 # List of things to do once ready
-READY = []
+ON_READY = []
 
 # Discord
 from nextcord.ext import commands
 bot = commands.Bot(command_prefix="!")
 
 # Tasks
-from task.order_lunch import order_lunch
+import lunch_order.main
 
 @bot.event
 async def on_ready():
     print(f'We have logged in as {bot.user}')
-    for i in READY:
+    for i in ON_READY:
         i.start()
 
-@bot.event
-async def on_message(message):
-    if message.author.id != bot.user.id: # Message is not from bot
-        if message.content[0] == "!": # Message is a command
-            if message.content == "!lunch":
-                await order_lunch(message)
-
 bot.run(CONFIG["token"])
-
