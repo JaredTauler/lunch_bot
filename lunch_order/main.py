@@ -52,13 +52,18 @@ Count = CountStatus()
 @tasks.loop(hours=24) # Every 24 hours
 async def Announce_Lunch(ChannelList=None):
     menu = LunchMenu.Today()
+
     if not menu:
+        for i in ChannelList:
+            channel = bot.get_channel(int(i[0]))
+            await channel.send("No lunch today :frowning2:")
         return
 
-    if not ChannelList: # Test mode if not ChannelList
+    if not ChannelList: # Test mode if not ChannelList, Lunch is being ordered if menu is true
         with Session() as session:
             ChannelList = session.query(db.Guild.announce_channel, db.Guild.ping_role).all()
 
+    view = order_lunch()
     def role():
         if i[1] != None:
             return f"<@&{str(i[1])}> "
@@ -68,16 +73,10 @@ async def Announce_Lunch(ChannelList=None):
     def is_me(m):
         return m.author == bot.user
 
-    view = order_lunch()
-    message = "Lunch call"
-
     # For every channel
     for i in ChannelList:
         try:
             channel = bot.get_channel(int(i[0]))
-            # Don't need a million messages stinking up the channel, try and delete some.
-            await channel.purge(limit=50, check=is_me)
-            import io
             await channel.send(
                 f"{role()}Who wants lunch?\n{menu[0]}",
                 view=view,

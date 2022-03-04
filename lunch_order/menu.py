@@ -22,7 +22,8 @@ class LunchMenu():
                 break
 
         items = day["menu_items"]
-        if items is []:  # Looks like lunch isnt being served today.
+
+        if not items:  # Looks like lunch isnt being served today.
             return False
         else:
             String = ""
