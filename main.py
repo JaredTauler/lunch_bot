@@ -1,35 +1,32 @@
 # Jared Tauler 2/25/2022
-
+import os
 import json
-with open('config.yaml', 'r') as f:
+with open('config.json  ', 'r') as f:
     CONFIG = json.load(f)
 
-# Database
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
-DB_BASE = declarative_base()
-# DB Setup files:
-import lunch_order.database
-# Finalize Database
-engine = create_engine(CONFIG["db-string"], echo=True)
-DB_BASE.metadata.create_all(bind=engine)
-DB = sessionmaker(bind=engine)
-
-# List of things to do once ready
-ON_READY = []
-
-# Discord
 from nextcord.ext import commands
-bot = commands.Bot(command_prefix="!")
 
-# Tasks
-import lunch_order.main
+def custom_id(view: str, id: int) -> str:
+    """create a custom id from the bot name : the view : the identifier"""
+    return f"{CONFIG['botname']}:{view}:{id}"
+# Database
+# from sqlalchemy import create_engine
+# from sqlalchemy.orm import sessionmaker
+# from sqlalchemy.ext.declarative import declarative_base
+def main():
+    # Discord
+    bot = commands.Bot(command_prefix="!")
 
-@bot.event
-async def on_ready():
-    print(f'We have logged in as {bot.user}')
-    for i in ON_READY:
-        i.start()
+    @bot.event
+    async def on_ready():
+        print(f'We have logged in as {bot.user}')
 
-bot.run(CONFIG["token"])
+    # load all cogs
+    for folder in os.listdir("cogs"):
+        if os.path.exists(os.path.join("cogs", folder, "cog.py")):
+            bot.load_extension(f"cogs.{folder}.cog")
+
+    bot.run(CONFIG["token"])
+
+if __name__ == "__main__":
+    main()
