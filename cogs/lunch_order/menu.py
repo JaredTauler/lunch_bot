@@ -11,7 +11,7 @@ class LunchMenu():
     url = CONFIG["lunch-menu"]
 
     @staticmethod
-    def Today():
+    def Today(ShowServingSize=False):
         today = dt.datetime.now().date().today()
         get = requests.get(
             LunchMenu.url + today.strftime("%Y/%m/%d")
@@ -37,23 +37,21 @@ class LunchMenu():
                         if img:
                             Pictures.append(img)
                         String += f'{f.get("name")}'
-                        ss = f.get("serving_size_info")
-                        if ss:
-                            String +=f': {ss["serving_size_amount"]} {ss["serving_size_unit"]}'
+                        if ShowServingSize: # Funny that you can show this but seems like useless information.
+                            ss = f.get("serving_size_info")
+                            if ss:
+                                String +=f': {ss["serving_size_amount"]} {ss["serving_size_unit"]}'
                         String += "\n"
                     else: # Drink item
                         Drinks.append(food.get("text"))
                 except Exception as e:
                     print(e)
-            # Drink text
-            if len(Drinks) == 1:
-                String += f"Just {Drinks[0]} is available today.\n"
-            else:
-                x = ""
-                for i in Drinks:
-                    x += f' {i},'
-                x = x[:-1]
-                String += f"Available drinks today are:{x}. \n"
+            # They are not consistent with how they log available drinks, so just look for the text "juice".
+            x = ""
+            for i in Drinks:
+                x+=str(i)
+            if x.lower().find("juice") != -1:
+                String += f"\nJuice is available today.\n"
 
             return String, CombinePics(Pictures)
 

@@ -5,6 +5,7 @@ with open('config.json  ', 'r') as f:
     CONFIG = json.load(f)
 
 from nextcord.ext import commands
+import nextcord
 
 def custom_id(view: str, id: int) -> str:
     """create a custom id from the bot name : the view : the identifier"""
@@ -15,7 +16,9 @@ def custom_id(view: str, id: int) -> str:
 # from sqlalchemy.ext.declarative import declarative_base
 def main():
     # Discord
-    bot = commands.Bot(command_prefix="!")
+    intents = nextcord.Intents.default()
+    intents.members = True
+    bot = commands.Bot(command_prefix="!", intents=intents)
 
     @bot.event
     async def on_ready():
